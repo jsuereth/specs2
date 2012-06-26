@@ -1,7 +1,3 @@
-import com.jsuereth.sbtsite.SiteKeys._
-import com.jsuereth.git.{GitKeys,GitRunner}
-import GitKeys.{gitBranch, gitRemoteRepo}
-import com.jsuereth.ghpages.GhPages.ghpages._
 
 /** Project */
 name := "specs2"
@@ -11,8 +7,6 @@ version := "1.11"
 organization := "org.specs2"
 
 scalaVersion := "2.9.2"
-
-crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2")
 
 /** Shell */
 shellPrompt := { state => System.getProperty("user.name") + "> " }
@@ -62,33 +56,6 @@ testOptions := Seq(Tests.Filter(s =>
 /** Console */
 initialCommands in console := "import org.specs2._"
 
-/** Site building */
-site.settings
-
-seq(site.settings:_*)
-
-siteSourceDirectory <<= target (_ / "specs2-reports")
-
-// depending on the version, copy the api files to a different directory
-siteMappings <++= (mappings in packageDoc in Compile, version) map { (m, v) =>
-  for((f, d) <- m) yield (f, "api/"+v+"/"+d)
-}
-
-/** Site publication */
-seq(ghpages.settings:_*)
-
-// override the synchLocal task to avoid removing the existing files
-synchLocal <<= (privateMappings, updatedRepository, GitKeys.gitRunner, streams) map { (mappings, repo, git, s) =>
-  val betterMappings = mappings map { case (file, target) => (file, repo / target) }
-  IO.copy(betterMappings)
-  repo
-}
-
-git.remoteRepo := "git@github.com:etorreborre/specs2.git"
-
-/** Publishing */
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials") 
-
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"
   if (v.trim.endsWith("SNAPSHOT")) Some("sonatype-snapshots" at nexus + "content/repositories/snapshots")
@@ -123,10 +90,3 @@ pomExtra := (
     </developers>
 )
 
-seq(lsSettings :_*)
-
-(LsKeys.ghBranch in LsKeys.lsync) <<= version { Some(_) }
-
-(LsKeys.ghUser in LsKeys.lsync) := Some("etorreborre")
-
-(LsKeys.ghRepo in LsKeys.lsync) := Some("specs2")
