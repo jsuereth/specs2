@@ -1,12 +1,11 @@
-
 /** Project */
 name := "specs2"
 
-version := "1.11"
+version := "1.12-SNAPSHOT"
 
 organization := "org.specs2"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0-M4"
 
 /** Shell */
 shellPrompt := { state => System.getProperty("user.name") + "> " }
@@ -14,14 +13,12 @@ shellPrompt := { state => System.getProperty("user.name") + "> " }
 shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
 
 /** Dependencies */
-resolvers ++= Seq("releases" at "http://oss.sonatype.org/content/repositories/releases",
-                  "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+resolvers ++= Seq(Opts.resolver.sonatypeReleases, Opts.resolver.sonatypeSnapshots)
 
 libraryDependencies <<= scalaVersion { scala_version => Seq(
-  "org.specs2" %% "specs2-scalaz-core" % "6.0.1",
+  "org.specs2" % "specs2-scalaz-core_2.10" % "6.0.1",
   "org.scala-lang" % "scala-compiler" % scala_version % "optional",
-  if (scala_version contains "-1") "org.scalacheck" % "scalacheck_2.9.1" % "1.9" % "optional"
-  else                             "org.scalacheck" %% "scalacheck" % "1.9" % "optional",
+  "org.scalacheck" % "scalacheck_2.9.2" % "1.9" % "optional",
   "org.scala-tools.testing" % "test-interface" % "0.5" % "optional",
   "org.hamcrest" % "hamcrest-all" % "1.1" % "optional",
   "org.mockito" % "mockito-all" % "1.9.0" % "optional",
@@ -56,11 +53,7 @@ testOptions := Seq(Tests.Filter(s =>
 /** Console */
 initialCommands in console := "import org.specs2._"
 
-publishTo <<= version { v: String =>
-  val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT")) Some("sonatype-snapshots" at nexus + "content/repositories/snapshots")
-  else                             Some("sonatype-staging" at nexus   + "service/local/staging/deploy/maven2")
-}
+publishTo <<= version(v => Option(if (v.trim endsWith "SNAPSHOT") Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging))
 
 publishMavenStyle := true
 
